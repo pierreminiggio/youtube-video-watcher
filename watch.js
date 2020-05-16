@@ -16,16 +16,16 @@ const displayTimer = async (videoDuration, adsDuration, color) => {
 
     console.log(color, 'Let\'s say the ads duration are ' + adsDuration + ' seconds...')
 
-    for (let time = 0; time < adsDuration; time++) {
+    for (let time = 0; time <= adsDuration; time++) {
         await timeout(1000)
-        if (time % 5 === 0) {
+        if (time % 5 === 0 || time === adsDuration) {
             console.log(color, 'Ads : Watched ' + time + 's / ' + adsDuration + 's')
         }
     }
     
-    for (let time = 0; time < videoDuration; time++) {
+    for (let time = 0; time <= videoDuration; time++) {
         await timeout(1000)
-        if (time % 5 === 0) {
+        if (time % 5 === 0 || time === videoDuration) {
             console.log(color, 'Video : Watched ' + time + 's / ' + videoDuration + 's')
         }
     }
