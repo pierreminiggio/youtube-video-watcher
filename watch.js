@@ -74,12 +74,17 @@ const startWatchingYoutubeVideo = async (code, tor, color, show, adsDuration) =>
         if (videoDuration === null) {
             throw 'Video duration could not be determined, likely because it encountered a Captcha.'
         }
-        console.log(color, 'Video duration: ' + videoDuration + 'seconds')
+        console.log(color, 'Video duration: ' + videoDuration + ' seconds')
+
+        const videoDurationToWatch = Math.floor(Math.random() * videoDuration) + 1
+        console.log(color, 'Let\'s only watch ' + videoDurationToWatch + ' seconds !')
 
         page.click('.ytp-play-button')
 
-        const duration = videoDuration + adsDuration
-        displayTimer(videoDuration, adsDuration, color)
+        const duration = videoDurationToWatch + adsDuration
+
+        displayTimer(videoDurationToWatch, adsDuration, color)
+        
         await page.waitFor(duration * 100)
 
     } catch(e) {
