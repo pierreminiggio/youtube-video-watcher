@@ -6,7 +6,7 @@ const puppeteer = require('puppeteer')
  * @param {int} ms 
  */
 const timeout = (ms) => {
-    return new Promise(resolve => setTimeout(resolve, ms));
+    return new Promise(resolve => setTimeout(resolve, ms))
 }
 /**
  * @param {int} videoDurationToWatch 
@@ -69,25 +69,39 @@ const startWatchingYoutubeVideo = async (code, terms, tor, color, show, adsDurat
 
         const page = await browser.newPage()
         if (terms) {
-            page.goto('https://www.youtube.com/results?search_query=' + terms, {waitUntil: 'networkidle2', timeout: 0})
-            await page.waitFor(3000)
-            page.click('a[href="/watch?v=' + code + '"]')
+
+            try {
+                page.goto('https://www.youtube.com/results?search_query=' + terms, {waitUntil: 'networkidle2', timeout: 0})
+            } catch(e) {
+                throw 'Search page failed to load, likely a temporary network error'
+            }
+
+            const videoLinkSelector = 'a[href="/watch?v=' + code + '"]'
+            await page.waitForSelector(videoLinkSelector);
+            page.click(videoLinkSelector)
+            await page.waitForSelector('.style-scope.ytd-channel-name')
+            
         } else {
             page.goto('https://www.youtube.com/watch?v=' + code, {waitUntil: 'networkidle2', timeout: 0})
+            await page.waitForSelector('.ytp-play-button')
         }
 
-        await page.waitFor(10000)
-
-        const videoDuration = await page.evaluate(() => (typeof ytplayer !== 'undefined') ? (ytplayer.config ? ytplayer.config.args.length_seconds : null) : null)
-        if (videoDuration === null) {
-            throw 'Video duration could not be determined, likely because it encountered a Captcha.'
+        if (! terms) {
+            const videoDurationToCheck = await findVideoDuration(page)
+            if (videoDurationToCheck === null) {
+                throw 'Video duration could not be determined, likely because it encountered a Captcha.'
+            }
+            console.log(videoDurationToCheck)
         }
+        
         console.log(color, 'Video duration: ' + videoDuration + ' seconds')
 
         const videoDurationToWatch = Math.floor(Math.random() * Math.floor(videoDuration * 2/3)) + Math.floor(videoDuration * 1/3)
         console.log(color, 'Let\'s only watch ' + videoDurationToWatch + ' seconds !')
 
-        page.click('.ytp-play-button')
+        if (! terms) {
+            page.click('.ytp-play-button')
+        }
 
         const duration = videoDurationToWatch + adsDuration
 
@@ -102,6 +116,22 @@ const startWatchingYoutubeVideo = async (code, terms, tor, color, show, adsDurat
     console.log(color, 'Done watching !')
 
     browser.close()
+}
+
+/**
+ * @param {Page} page 
+ * @returns {Promise}
+ */
+async function findVideoDuration(page) {
+    return new Promise(async (resolve) => {
+        resolve(
+            await page.evaluate(
+                () => (
+                    typeof ytplayer !== 'undefined'
+                ) ? (ytplayer.config ? ytplayer.config.args.length_seconds : null) : null
+            )
+        )
+    })
 }
 
 /**
