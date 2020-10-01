@@ -79,7 +79,6 @@ const startWatchingYoutubeVideo = async (code, videoDuration, terms, tor, color,
         
         testPage.close()
     }
-    
 
     try {
 
