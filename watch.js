@@ -158,7 +158,7 @@ const letsGo = () => {
 
     if (process.argv.length < 3) {
 
-        console.warn('Use this program like this: "node watch.js <video:code>---<search:"terms"> <option: show>"')
+        console.warn('Use this program like this: "node watch.js [video:<code>[---search:"<terms>"] [<show>]]"')
 
     } else {
 
