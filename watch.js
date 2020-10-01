@@ -49,7 +49,8 @@ async function createBrowser(tor, show) {
                 rejects(error)
             })
         } else {
-            resolve(await findBrowser(launchParameters))
+            const browser = await findBrowser(launchParameters)
+            resolve(browser)
         }
     })  
 }
@@ -310,7 +311,7 @@ const letsGo = async () => {
 
     if (process.argv.length < 3) {
 
-        console.warn('Use this program like this: "node watch.js [video:<code>[---search:"<terms>"] [<show>]]"')
+        console.warn('Use this program like this: "node watch.js [[video:<code>[---search:"<terms>"] [<show>]] <tor>]"')
 
     } else {
 
@@ -323,10 +324,10 @@ const letsGo = async () => {
         }
 
         const show = process.argv.length > 3 && process.argv[3] === 'show'
+        const tor = process.argv.length > 4 && process.argv[4] === 'tor'
 
         if (video) {
             const color = '\x1b[35m'
-            const tor = true
             const videoDuration = await findDurationForVideo(video, tor, show, color)
             watchVideo(video, videoDuration, terms, show, tor, color, 0)
         }  
