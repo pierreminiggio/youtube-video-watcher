@@ -48,8 +48,7 @@ async function createBrowser(tor, show) {
         }).catch(error => {
             rejects(error)
         })
-    })
-    
+    })  
 }
 
 /**
