@@ -144,7 +144,7 @@ const startWatchingYoutubeVideo = async (code, videoDuration, terms, tor, color,
  * @throws
  */
 async function loadVideoPage(page, code) {
-    return new Promise(async (resolve) => {
+    return new Promise(async (resolve, rejects) => {
         page.goto('https://www.youtube.com/watch?v=' + code, {waitUntil: 'networkidle2', timeout: 0})
         try {
             await page.waitForSelector('.ytp-play-button', {
@@ -183,7 +183,7 @@ async function findVideoDurationForPage(page) {
  * @returns {Promise<number>}
  */
 async function tryFindDurationForVideo(code, tor, show, color) {
-    return new Promise(async (resolve) => {
+    return new Promise(async (resolve, rejects) => {
         console.log(color, 'Let\'s try to find the duration for the video ' + code)
         await restartTor(color)
 
