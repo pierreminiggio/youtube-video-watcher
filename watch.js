@@ -9,11 +9,11 @@ const timeout = (ms) => {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 /**
- * @param {int} videoDuration 
+ * @param {int} videoDurationToWatch 
  * @param {int} adsDuration 
  * @param {string} color 
  */
-const displayTimer = async (videoDuration, adsDuration, color) => {
+const displayTimer = async (videoDurationToWatch, adsDuration, color) => {
 
     console.log(color, 'Let\'s say the ads duration are ' + adsDuration + ' seconds...')
 
@@ -24,10 +24,10 @@ const displayTimer = async (videoDuration, adsDuration, color) => {
         }
     }
     
-    for (let time = 0; time <= videoDuration; time++) {
+    for (let time = 0; time <= videoDurationToWatch; time++) {
         await timeout(1000)
-        if ((time % 5 === 0) || time === videoDuration) {
-            console.log(color, 'Video : Watched ' + time + 's / ' + videoDuration + 's')
+        if ((time % 5 === 0) || time === videoDurationToWatch) {
+            console.log(color, 'Video : Watched ' + time + 's / ' + videoDurationToWatch + 's')
         }
     }
 }
