@@ -35,7 +35,7 @@ const displayTimer = async (videoDurationToWatch, adsDuration, color) => {
  * @param {boolean} tor 
  * @param {boolean} show 
  * 
- * @returns {Promise<Browser>}
+ * @returns {Promise<import('puppeteer').Browser>}
  */
 async function createBrowser(tor, show) {
     return new Promise(async (resolve, rejects) => {
@@ -134,7 +134,7 @@ const startWatchingYoutubeVideo = async (code, videoDuration, terms, tor, color,
 }
 
 /**
- * @param {Page} page 
+ * @param {import('puppeteer').Page} page 
  * @param {string} code 
  * 
  * @returns {Promise}
@@ -156,7 +156,7 @@ async function loadVideoPage(page, code) {
 }
 
 /**
- * @param {Page} page 
+ * @param {import('puppeteer').Page} page 
  * 
  * @returns {Promise<number>}
  */
