@@ -1,4 +1,3 @@
-const { rejects } = require('assert')
 const {exec} = require('child_process')
 const puppeteer = require('puppeteer')
 
@@ -39,7 +38,7 @@ const displayTimer = async (videoDurationToWatch, adsDuration, color) => {
  * @returns {Promise<Browser>}
  */
 async function createBrowser(tor, show) {
-    return new Promise(async (resolve) => {
+    return new Promise(async (resolve, rejects) => {
         let launchParameters = {headless: ! show}
         if (tor) {
             launchParameters.args = ['--proxy-server=socks5://127.0.0.1:9050']
