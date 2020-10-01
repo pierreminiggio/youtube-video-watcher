@@ -1,4 +1,5 @@
-const {exec} = require('child_process')
+const {exec} = require('child_process');
+const { exit } = require('process');
 const puppeteer = require('puppeteer')
 
 /**
@@ -33,11 +34,12 @@ const displayTimer = async (videoDuration, adsDuration, color) => {
 
 /**
  * @param {string} code 
+ * @param {?string} terms
  * @param {boolean} tor 
  * @param {string} color 
  * @param {boolean} show 
  */
-const startWatchingYoutubeVideo = async (code, tor, color, show, adsDuration) => {
+const startWatchingYoutubeVideo = async (code, terms, tor, color, show, adsDuration) => {
 
     let launchParameters = {headless: ! show}
     if (tor) {
@@ -64,9 +66,14 @@ const startWatchingYoutubeVideo = async (code, tor, color, show, adsDuration) =>
     
 
     try {
-        const page = await browser.newPage()
 
-        page.goto('https://www.youtube.com/watch?v=' + code, {waitUntil: 'networkidle2', timeout: 0})
+        const page = await browser.newPage()
+        if (terms) {
+            page.goto('https://www.youtube.com/results?search_query=' + terms, {waitUntil: 'networkidle2', timeout: 0})
+            await page.waitFor(10000)
+        } else {
+            page.goto('https://www.youtube.com/watch?v=' + code, {waitUntil: 'networkidle2', timeout: 0})
+        }
 
         await page.waitFor(10000)
 
@@ -84,7 +91,7 @@ const startWatchingYoutubeVideo = async (code, tor, color, show, adsDuration) =>
         const duration = videoDurationToWatch + adsDuration
 
         displayTimer(videoDurationToWatch, adsDuration, color)
-        
+
         await page.waitFor(duration * 100)
 
     } catch(e) {
@@ -96,11 +103,12 @@ const startWatchingYoutubeVideo = async (code, tor, color, show, adsDuration) =>
 
 /**
  * @param {string} code 
+ * @param {?string} terms 
  * @param {boolean} show 
  * @param {string} color 
  * @param {int} adsDuration 
  */
-function watchVideo(code, show, color, adsDuration) {
+function watchVideo(code, terms, show, color, adsDuration) {
 
     try {
         console.log(color, '\n\nClear previous tor...\n\n\n\n')
@@ -127,11 +135,11 @@ function watchVideo(code, show, color, adsDuration) {
             setTimeout(() => {
                 console.log(color, "Let's watch " + code)
 
-                startWatchingYoutubeVideo(code, true, color, show, adsDuration).then(() => {
-                    watchVideo(code, show, color, adsDuration)
+                startWatchingYoutubeVideo(code, terms, true, color, show, adsDuration).then(() => {
+                    watchVideo(code, terms, show, color, adsDuration)
                 }).catch(e => {
                     console.warn(color, '\n\nEncoutered an error, starting again...')
-                    watchVideo(code, show, color, adsDuration)
+                    watchVideo(code, terms, show, color, adsDuration)
                 })
 
             }, 2000)
@@ -147,15 +155,22 @@ const letsGo = () => {
 
     if (process.argv.length < 3) {
 
-        console.warn('Use this program like this: "node watch.js <video:code> <option: show>"')
+        console.warn('Use this program like this: "node watch.js <video:code>---<search:"terms"> <option: show>"')
 
     } else {
 
-        let video = process.argv[2].includes('video:') ? process.argv[2].replace('video:', '') : null
+        const args2 = process.argv[2].split('---')
+        let video = args2[0].includes('video:') ? args2[0].replace('video:', '') : null
+        
+        let terms = null
+        if (args2.length === 2) {
+            terms = args2[1].includes('search:') ? args2[1].replace('search:', '') : null
+        }
+
         const show = process.argv.length > 3 && process.argv[3] === 'show'
 
         if (video) {
-            watchVideo(video, show, '\x1b[35m', 0)
+            watchVideo(video, terms, show, '\x1b[35m', 0)
         }  
     }
 }
