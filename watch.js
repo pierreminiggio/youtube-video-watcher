@@ -320,8 +320,9 @@ const letsGo = async () => {
 
         if (video) {
             const color = '\x1b[35m'
-            const videoDuration = await findDurationForVideo(video, true, show, color)
-            watchVideo(video, videoDuration, terms, show, true, color, 0)
+            const tor = true
+            const videoDuration = await findDurationForVideo(video, tor, show, color)
+            watchVideo(video, videoDuration, terms, show, tor, color, 0)
         }  
     }
 }
