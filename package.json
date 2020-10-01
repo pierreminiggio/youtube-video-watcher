@@ -17,6 +17,7 @@
   },
   "homepage": "https://github.com/pierreminiggio/youtube-video-watcher#readme",
   "dependencies": {
+    "@pierreminiggio/proxied-browser-creator": "github:pierreminiggio/proxied-browser-creator",
     "node": "^12.6.0",
     "node-fetch": "^2.6.1",
     "puppeteer": "^1.18.1"

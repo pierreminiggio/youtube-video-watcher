@@ -1,5 +1,6 @@
 const {exec} = require('child_process')
 const puppeteer = require('puppeteer')
+const findBrowser = require('@pierreminiggio/proxied-browser-creator')
 
 /**
  * @param {int} ms 
@@ -186,14 +187,18 @@ async function tryFindDurationForVideo(code, tor, show, color) {
 
         try {
             const browser = await createBrowser(tor, show)
-            const videoPage = await browser.newPage()
-            await loadVideoPage(videoPage, code)
-            const duration = await findVideoDurationForPage(videoPage)
-            browser.close()
-            console.log(color, 'Got the duration : ' + duration + ' seconds')
-            resolve(duration)
+            try {
+                const videoPage = await browser.newPage()
+                await loadVideoPage(videoPage, code)
+                const duration = await findVideoDurationForPage(videoPage)
+                browser.close()
+                console.log(color, 'Got the duration : ' + duration + ' seconds')
+                resolve(duration)
+            } catch(e) {
+                browser.close()
+                rejects('Error while trying to find video duration')
+            }
         } catch(e) {
-            browser.close()
             rejects('Error while trying to find video duration')
         }
     })
@@ -260,25 +265,38 @@ async function restartTor(color) {
  * @param {number} videoDuration 
  * @param {?string} terms 
  * @param {boolean} show 
+ * @param {boolean} tor 
  * @param {string} color 
  * @param {int} adsDuration 
  */
-function watchVideo(code, videoDuration, terms, show, color, adsDuration) {
+function watchVideo(code, videoDuration, terms, show, tor, color, adsDuration) {
 
     try {
-        restartTor(color).then(() => {
+        if (tor) {
+            restartTor(color).then(() => {
+                console.log(color, "Let's watch " + code)
+    
+                startWatchingYoutubeVideo(code, videoDuration, terms, tor, color, show, adsDuration).then(() => {
+                    watchVideo(code, videoDuration, terms, show, tor, color, adsDuration)
+                }).catch(e => {
+                    console.warn(color, '\n\nEncoutered an error, starting again...')
+                    watchVideo(code, videoDuration, terms, show, tor, color, adsDuration)
+                })
+            })
+        } else {
             console.log(color, "Let's watch " + code)
-
-            startWatchingYoutubeVideo(code, videoDuration, terms, true, color, show, adsDuration).then(() => {
-                watchVideo(code, videoDuration, terms, show, color, adsDuration)
+    
+            startWatchingYoutubeVideo(code, videoDuration, terms, tor, color, show, adsDuration).then(() => {
+                watchVideo(code, videoDuration, terms, show, tor, color, adsDuration)
             }).catch(e => {
                 console.warn(color, '\n\nEncoutered an error, starting again...')
-                watchVideo(code, videoDuration, terms, show, color, adsDuration)
+                watchVideo(code, videoDuration, terms, show, tor, color, adsDuration)
             })
-        })
+        }
+        
     } catch(e) {
         console.warn(color, '\n\nEncoutered an error, starting again...')
-        watchVideo(code, videoDuration, terms, show, color, adsDuration)
+        watchVideo(code, videoDuration, terms, show, tor, color, adsDuration)
     }
 }
 
@@ -303,7 +321,7 @@ const letsGo = async () => {
         if (video) {
             const color = '\x1b[35m'
             const videoDuration = await findDurationForVideo(video, true, show, color)
-            watchVideo(video, videoDuration, terms, show, color, 0)
+            watchVideo(video, videoDuration, terms, show, true, color, 0)
         }  
     }
 }
