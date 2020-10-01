@@ -93,11 +93,13 @@ const startWatchingYoutubeVideo = async (code, terms, tor, color, show, adsDurat
 
         displayTimer(videoDurationToWatch, adsDuration, color)
 
-        await page.waitFor(duration * 100)
+        await page.waitFor(duration * 1000)
 
     } catch(e) {
         console.error(e)
     }
+
+    console.log(color, 'Done watching !')
 
     browser.close()
 }
