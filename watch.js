@@ -43,12 +43,12 @@ async function createBrowser(tor, show) {
         let launchParameters = {headless: ! show}
         if (tor) {
             launchParameters.args = ['--proxy-server=socks5://127.0.0.1:9050']
+            puppeteer.launch(launchParameters).then(browser => {
+                resolve(browser)
+            }).catch(error => {
+                rejects(error)
+            })
         }
-        puppeteer.launch(launchParameters).then(browser => {
-            resolve(browser)
-        }).catch(error => {
-            rejects(error)
-        })
     })  
 }
 
