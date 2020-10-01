@@ -70,7 +70,8 @@ const startWatchingYoutubeVideo = async (code, terms, tor, color, show, adsDurat
         const page = await browser.newPage()
         if (terms) {
             page.goto('https://www.youtube.com/results?search_query=' + terms, {waitUntil: 'networkidle2', timeout: 0})
-            await page.waitFor(10000)
+            await page.waitFor(3000)
+            page.click('a[href="/watch?v=' + code + '"]')
         } else {
             page.goto('https://www.youtube.com/watch?v=' + code, {waitUntil: 'networkidle2', timeout: 0})
         }
