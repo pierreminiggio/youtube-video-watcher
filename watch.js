@@ -84,7 +84,7 @@ const startWatchingYoutubeVideo = async (code, terms, tor, color, show, adsDurat
         }
         console.log(color, 'Video duration: ' + videoDuration + ' seconds')
 
-        const videoDurationToWatch = Math.floor(Math.random() * videoDuration) + 1
+        const videoDurationToWatch = Math.floor(Math.random() * Math.floor(videoDuration * 2/3)) + Math.floor(videoDuration * 1/3)
         console.log(color, 'Let\'s only watch ' + videoDurationToWatch + ' seconds !')
 
         page.click('.ytp-play-button')
@@ -143,7 +143,7 @@ function watchVideo(code, terms, show, color, adsDuration) {
                     watchVideo(code, terms, show, color, adsDuration)
                 })
 
-            }, 2000)
+            }, 5000)
 
         })
     } catch(e) {
