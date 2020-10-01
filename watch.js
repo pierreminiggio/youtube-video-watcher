@@ -1,5 +1,5 @@
-const {exec} = require('child_process');
-const { exit } = require('process');
+const { rejects } = require('assert')
+const {exec} = require('child_process')
 const puppeteer = require('puppeteer')
 
 /**
@@ -33,19 +33,37 @@ const displayTimer = async (videoDurationToWatch, adsDuration, color) => {
 }
 
 /**
+ * @param {boolean} tor 
+ * @param {boolean} show 
+ * 
+ * @returns {Promise<Browser>}
+ */
+async function createBrowser(tor, show) {
+    return new Promise(async (resolve) => {
+        let launchParameters = {headless: ! show}
+        if (tor) {
+            launchParameters.args = ['--proxy-server=socks5://127.0.0.1:9050']
+        }
+        puppeteer.launch(launchParameters).then(browser => {
+            resolve(browser)
+        }).catch(error => {
+            rejects(error)
+        })
+    })
+    
+}
+
+/**
  * @param {string} code 
+ * @param {number} videoDuration
  * @param {?string} terms
  * @param {boolean} tor 
  * @param {string} color 
  * @param {boolean} show 
  */
-const startWatchingYoutubeVideo = async (code, terms, tor, color, show, adsDuration) => {
+const startWatchingYoutubeVideo = async (code, videoDuration, terms, tor, color, show, adsDuration) => {
 
-    let launchParameters = {headless: ! show}
-    if (tor) {
-        launchParameters.args = ['--proxy-server=socks5://127.0.0.1:9050']
-    }
-    const browser = await puppeteer.launch(launchParameters)
+    const browser = await createBrowser(tor, show)
 
     if (tor) {
         const testPage = await browser.newPage()
@@ -86,7 +104,7 @@ const startWatchingYoutubeVideo = async (code, terms, tor, color, show, adsDurat
         }
 
         if (! terms) {
-            const videoDurationToCheck = await findVideoDuration(page)
+            const videoDurationToCheck = await findVideoDurationForPage(page)
             if (videoDurationToCheck === null) {
                 throw 'Video duration could not be determined, likely because it encountered a Captcha.'
             }
@@ -122,11 +140,19 @@ const startWatchingYoutubeVideo = async (code, terms, tor, color, show, adsDurat
  * @param {string} code 
  * 
  * @returns {Promise}
+ * 
+ * @throws
  */
 async function loadVideoPage(page, code) {
     return new Promise(async (resolve) => {
         page.goto('https://www.youtube.com/watch?v=' + code, {waitUntil: 'networkidle2', timeout: 0})
-        await page.waitForSelector('.ytp-play-button')
+        try {
+            await page.waitForSelector('.ytp-play-button', {
+                timeout: 10000
+            })
+        } catch (e) {
+            rejects('Play button was not loaded')
+        }
         resolve()
     })
 }
@@ -134,9 +160,9 @@ async function loadVideoPage(page, code) {
 /**
  * @param {Page} page 
  * 
- * @returns {Promise}
+ * @returns {Promise<number>}
  */
-async function findVideoDuration(page) {
+async function findVideoDurationForPage(page) {
     return new Promise(async (resolve) => {
         resolve(
             await page.evaluate(
@@ -150,14 +176,59 @@ async function findVideoDuration(page) {
 
 /**
  * @param {string} code 
- * @param {?string} terms 
+ * @param {boolean} tor 
+ * @param {boolean} show 
+ * @param {string} color
+ * 
+ * @returns {Promise<number>}
+ */
+async function tryFindDurationForVideo(code, tor, show, color) {
+    return new Promise(async (resolve) => {
+        console.log(color, 'Let\'s try to find the duration for the video ' + code)
+        await restartTor(color)
+
+        try {
+            const browser = await createBrowser(tor, show)
+            const videoPage = await browser.newPage()
+            await loadVideoPage(videoPage, code)
+            const duration = await findVideoDurationForPage(videoPage)
+            browser.close()
+            console.log(color, 'Got the duration : ' + duration + ' seconds')
+            resolve(duration)
+        } catch(e) {
+            browser.close()
+            rejects('Error while trying to find video duration')
+        }
+    })
+}
+
+/**
+ * @param {string} code 
+ * @param {boolean} tor 
  * @param {boolean} show 
  * @param {string} color 
- * @param {int} adsDuration 
+ * 
+ * @returns {Promise<number>}
  */
-function watchVideo(code, terms, show, color, adsDuration) {
+async function findDurationForVideo(code, tor, show, color) {
+    return new Promise(async (resolve) => {
+        try {
+            const videoDuration = await tryFindDurationForVideo(code, tor, show, color)
+            resolve(videoDuration)
+        } catch(e) {
+            resolve(findDurationForVideo(code, tor, show, color))
+        }
+        
+    })
+}
 
-    try {
+/**
+ * @param {string} color 
+ * 
+ * @returns {Promise}
+ */
+async function restartTor(color) {
+    return new Promise(resolve => {
         console.log(color, '\n\nClear previous tor...\n\n\n\n')
 
         exec('taskkill /IM "tor.exe" /F', (error, stdout, stderr) => {
@@ -180,25 +251,41 @@ function watchVideo(code, terms, show, color, adsDuration) {
             })
 
             setTimeout(() => {
-                console.log(color, "Let's watch " + code)
-
-                startWatchingYoutubeVideo(code, terms, true, color, show, adsDuration).then(() => {
-                    watchVideo(code, terms, show, color, adsDuration)
-                }).catch(e => {
-                    console.warn(color, '\n\nEncoutered an error, starting again...')
-                    watchVideo(code, terms, show, color, adsDuration)
-                })
-
+                resolve()
             }, 5000)
 
         })
+    })
+}
+
+/**
+ * @param {string} code 
+ * @param {number} videoDuration 
+ * @param {?string} terms 
+ * @param {boolean} show 
+ * @param {string} color 
+ * @param {int} adsDuration 
+ */
+function watchVideo(code, videoDuration, terms, show, color, adsDuration) {
+
+    try {
+        restartTor(color).then(() => {
+            console.log(color, "Let's watch " + code)
+
+            startWatchingYoutubeVideo(code, videoDuration, terms, true, color, show, adsDuration).then(() => {
+                watchVideo(code, videoDuration, terms, show, color, adsDuration)
+            }).catch(e => {
+                console.warn(color, '\n\nEncoutered an error, starting again...')
+                watchVideo(code, videoDuration, terms, show, color, adsDuration)
+            })
+        })
     } catch(e) {
         console.warn(color, '\n\nEncoutered an error, starting again...')
-        watchVideo(code, show, color, adsDuration)
+        watchVideo(code, videoDuration, terms, show, color, adsDuration)
     }
 }
 
-const letsGo = () => {
+const letsGo = async () => {
 
     if (process.argv.length < 3) {
 
@@ -217,7 +304,9 @@ const letsGo = () => {
         const show = process.argv.length > 3 && process.argv[3] === 'show'
 
         if (video) {
-            watchVideo(video, terms, show, '\x1b[35m', 0)
+            const color = '\x1b[35m'
+            const videoDuration = await findDurationForVideo(video, true, show, color)
+            watchVideo(video, videoDuration, terms, show, color, 0)
         }  
     }
 }
