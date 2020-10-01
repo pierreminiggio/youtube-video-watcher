@@ -1,7 +1,7 @@
 {
   "name": "youtube-video-watcher",
   "version": "1.0.0",
-  "description": "Automatically watches a Youtube video, and gives it a 100% view duration",
+  "description": "Automatically watches a Youtube video over and over again.",
   "main": "watch.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
