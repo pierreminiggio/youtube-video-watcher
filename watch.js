@@ -48,6 +48,8 @@ async function createBrowser(tor, show) {
             }).catch(error => {
                 rejects(error)
             })
+        } else {
+            resolve(await findBrowser(launchParameters))
         }
     })  
 }
@@ -183,10 +185,14 @@ async function findVideoDurationForPage(page) {
 async function tryFindDurationForVideo(code, tor, show, color) {
     return new Promise(async (resolve, rejects) => {
         console.log(color, 'Let\'s try to find the duration for the video ' + code)
-        await restartTor(color)
+
+        if (tor) {
+            await restartTor(color)
+        }
 
         try {
             const browser = await createBrowser(tor, show)
+            console.log(color, 'Browser created !')
             try {
                 const videoPage = await browser.newPage()
                 await loadVideoPage(videoPage, code)
