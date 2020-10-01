@@ -82,8 +82,7 @@ const startWatchingYoutubeVideo = async (code, terms, tor, color, show, adsDurat
             await page.waitForSelector('.style-scope.ytd-channel-name')
             
         } else {
-            page.goto('https://www.youtube.com/watch?v=' + code, {waitUntil: 'networkidle2', timeout: 0})
-            await page.waitForSelector('.ytp-play-button')
+            await loadVideoPage(page, code)
         }
 
         if (! terms) {
@@ -120,6 +119,21 @@ const startWatchingYoutubeVideo = async (code, terms, tor, color, show, adsDurat
 
 /**
  * @param {Page} page 
+ * @param {string} code 
+ * 
+ * @returns {Promise}
+ */
+async function loadVideoPage(page, code) {
+    return new Promise(async (resolve) => {
+        page.goto('https://www.youtube.com/watch?v=' + code, {waitUntil: 'networkidle2', timeout: 0})
+        await page.waitForSelector('.ytp-play-button')
+        resolve()
+    })
+}
+
+/**
+ * @param {Page} page 
+ * 
  * @returns {Promise}
  */
 async function findVideoDuration(page) {
