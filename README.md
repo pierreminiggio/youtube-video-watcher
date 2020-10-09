@@ -19,7 +19,10 @@ npm install
 ```
 ^ This might fails and will ask you to install some other stuff to make puppeteer work, refer to https://github.com/puppeteer/puppeteer/blob/main/README.md and Google to install what's missing
 
-Use this program like this: "node watch.js [[video:<code>[---search:"<terms>"] [<show>]] <tor>]"
+Use this program like this:
+```
+node watch.js [[video:<code>[---search:"<terms>"] [<show>]] <tor>]
+```
 
 Examples :
 
