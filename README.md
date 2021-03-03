@@ -1,4 +1,7 @@
 # youtube-video-watcher
+Clarification : Most of the views you'll get won't stick on your channel more than a few days.
+Youtube is actually really good at recognizing fake views.
+
 Automatically watches a Youtube video over and over again.
 
 Traffic sent to the videos will be sent from free proxies from around the world, but you can also use Tor instead.
