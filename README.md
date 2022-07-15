@@ -30,7 +30,7 @@ node watch.js [[video:<code>[---search:"<terms>"] [<show>]] <tor>]
 Examples :
 
 Send traffic directly to a video (not recommended, will likely be flagged as fake view by Youtube)
-fhCJMMxtKWk : is an example video code, you'll find your the URL of your video.
+fhCJMMxtKWk : is an example video code, you'll find your in the URL of your video.
 ```
 node watch.js video:fhCJMMxtKWk
 ```
@@ -45,7 +45,7 @@ node watch.js video:fhCJMMxtKWk show tor
 ```
 
 Send traffic to a video through a Youtube search :
-fhCJMMxtKWk : is an example video code, you'll find your the URL of your video.
+fhCJMMxtKWk : is an example video code, you'll find your in the URL of your video.
 quelle formation de développeur web : is an example Youtube search, use one that makes your video show up in the first few results
 ```
 node watch.js video:fhCJMMxtKWk---search:"quelle formation de développeur web"
